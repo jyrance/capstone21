@@ -7,6 +7,9 @@
 
 **/triton_client/*/input/**
 **/triton_client/*/output/**
+**/triton_client/experiment
+**/triton_client/sample_images
+
 
 **/static/*
 
