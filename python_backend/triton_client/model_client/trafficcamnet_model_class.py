@@ -51,15 +51,34 @@ class TrafficCamNetModelClass(BaseModelClass):
             self._batch_size = 16
         return trafficcamnet_predict(model_name=self._model_name, mode=self._mode, class_list=self._class_list,
                            output_path="./", postprocessing_config=self._post_processing_config,
-                           url=self._url, image_filename=file_path, verbose=False, streaming=False, async_set=True,
+                           url=self._url, image_filename=file_path, verbose=False, streaming=False, async_set=False,
                            protocol='HTTP', model_version="", batch_size=self._batch_size)
+
+import cv2 as cv
+def render_box(results, img_dir, out_dir):
+    for res in results:
+        file_name = res['file_name']
+        img = cv.imread(f'{img_dir}/{file_name}')
+        for b in res['all_bboxes']:
+            b = [int(coord) for coord in b['bbox']]
+            x1, y1, x2, y2 = b
+            img = cv.rectangle(img, (x1,y1), (x2,y2), (255,0,0), 2)  
+        cv.imwrite(f'{out_dir}/{file_name}', img)
+
+
 
 # To handle output_path
 if __name__ == "__main__":
     test_model = TrafficCamNetModelClass("hellosss")
     # print(test_model.status())
-    res = test_model.predict("../input/lpd")
+    # res = test_model.predict("../input/lpd")
 
-    import pickle
-    with open('output.pickle', 'wb') as handle:
-        pickle.dump(res, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    results_match = test_model.predict('../sample_images/match')
+    render_box(results_match, '../sample_images/match', '../experiment/tc/4/match')
+
+    results_over = test_model.predict('../sample_images/over')
+    render_box(results_over, '../sample_images/over', '../experiment/tc/4/over')
+
+
+    results_miss = test_model.predict('../sample_images/miss')
+    render_box(results_miss, '../sample_images/miss', '../experiment/tc/4/miss')
